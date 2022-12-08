@@ -3,6 +3,9 @@ import { BodyParams, PathParams } from "@tsed/platform-params";
 import { UserModel, UsersRepository } from "../../../prisma/generated/tsed";
 import { Delete, Get, Post, Put, Returns, Summary } from "@tsed/schema";
 import { CreateUserReq, UpdateUserReq } from "src/models";
+import { PrismaClient } from "@prisma/client";
+
+let prisma = new PrismaClient();
 
 @Controller("/users")
 export class UsersController {
@@ -34,11 +37,18 @@ export class UsersController {
   @Summary("Delete a specific user")
   @Returns(200, Boolean)
   async deleteUser(@PathParams("id") id: string): Promise<boolean> {
-    await this.service.delete({
-      where: {
-        id,
-      },
-    });
+    await prisma.$transaction([
+      prisma.post.deleteMany({
+        where: {
+          authorId: id,
+        },
+      }),
+      prisma.user.delete({
+        where: {
+          id,
+        },
+      }),
+    ]);
 
     return true;
   }

@@ -3,3 +3,4 @@
  */
 
 export * from "./UsersController";
+export * from "./PostsController";
